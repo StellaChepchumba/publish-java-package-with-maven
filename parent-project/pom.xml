@@ -70,7 +70,7 @@
     <repository>
       <id>ImaliPay</id>
       <name>ImaliPay</name>
-      <url>https://maven.pkg.github.com/Imalipay-org/messaging</url>
+      <url>https://maven.pkg.github.com/publish-java-package-with-maven</url>
     </repository>
   </distributionManagement>
 </project>
