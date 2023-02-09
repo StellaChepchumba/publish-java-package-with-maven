@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "imalipay.messaging.out.exchange",
+    "type": "java.lang.String",
+    "description": "exchange name for all messages"
+  },
+  {
+    "name": "imalipay.messaging.out.sms.uwazii",
+    "type": "java.lang.String",
+    "description": "routing key for sms messages sent out via uwazii"
+  },
+  {
+    "name": "imalipay.messaging.out.sms.infobip",
+    "type": "java.lang.String",
+    "description": "routing key for sms messages sent out via infobip "
+  }
+]}

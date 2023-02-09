@@ -1,0 +1,34 @@
+#version: '3.8'
+#
+#services:
+#  postgres:
+#    image: postgres:14.1-alpine
+#    container_name: postgres
+#    restart: always
+#    environment:
+#      - POSTGRES_USER=root
+#      - POSTGRES_PASSWORD=lipuka
+#      - POSTGRES_DB=core_v1
+#    ports:
+#      - '5433:5433'
+#    volumes:
+#      - db:/var/lib/postgresql/data
+#      - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+#
+#  messaging:
+#    container_name: messaging-core
+#    build:
+#      context: .
+#      target: sandbox
+#    image:  'msg-core:latest'
+#    depends_on:
+#      - postgres
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/core_v1?currentSchema=messaging
+#      - SPRING_DATASOURCE_USERNAME=root
+#      - SPRING_DATASOURCE_PASSWORD=lipuka
+#
+#
+#volumes:
+#  db:
+#    driver: local

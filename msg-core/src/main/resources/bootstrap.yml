@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: MessagingCore
+  cloud:
+    config:
+      uri: http://config-service:8080
+      label: development
+      retry:
+        max-attempts: 30
+        max-interval: 8000
+
+

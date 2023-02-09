@@ -1,0 +1,1 @@
+update "routes" set "vendor_code" = 'INFOBIP' where "country_code" = 'ZA' and "delivery_mode" = 'SMS';

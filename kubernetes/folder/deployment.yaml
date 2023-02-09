@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messsaging-core-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: messsaging-core-service
+  template:
+    metadata:
+      labels:
+        app: messsaging-core-service
+    spec:
+      containers:
+        - name: messsaging-core-service
+          image: 386821460247.dkr.ecr.eu-west-1.amazonaws.com/msg-core:latest # Image that will be used to containers in the cluster
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082 # The port that the container is running on in the cluster
+

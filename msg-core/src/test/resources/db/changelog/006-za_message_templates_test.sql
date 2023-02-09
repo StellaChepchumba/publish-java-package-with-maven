@@ -1,0 +1,3 @@
+insert into message_templates("event", "template", "source", "delivery_mode", "country_code")
+values ('OTP', 'Welcome to imalipay. Your one time pin is ${OTP}', 'ImaliPay', 'SMS', 'ZA'),
+	   ('REFERRAL', 'Hey ${REFERRAL_NAME}, join ${REFERRED_BY_NAME} on ImaliPay to access Okoa fuel, smartphones and much more to keep your hustle moving.Click on this link https://bit.ly/3cCyW6P to register and get free airtime from ImaliPay. Call 0706 229 0096 or 0703 129 3439 for inquiries', 'Imalipay', 'SMS', 'ZA');

@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "imalipay.messaging.out.exchange",
+  "type": "java.lang.String",
+  "description": "exchange name for all messages"
+}]}

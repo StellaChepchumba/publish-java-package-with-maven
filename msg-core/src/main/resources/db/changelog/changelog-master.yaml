@@ -1,0 +1,101 @@
+databaseChangeLog:
+  - changeSet:
+      id: schemaInit
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 001-database_init.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true
+  - changeSet:
+      id: addMessagingTemplates
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 002-add_message_templates.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true
+  - changeSet:
+      id: addRoutesmsRoute
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 003-add_routesms_route.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true
+  - changeSet:
+      id: addBotpressRoute
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 004-add_botpress_route.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true
+  - changeSet:
+      id: updateRouteSmsSa
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 005-update_sa_sms_route.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true
+  - changeSet:
+      id: zaMessageTemplates
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 006-za_message_templates.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true
+  - changeSet:
+      id: addUssdChannel
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 007-add_ussd_channel.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true
+  - changeSet:
+      id: addExtradataToRoute
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 008-add_extra_data_field_to_route.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true
+  - changeSet:
+      id: ussdOtpCodes
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 009-ussd_otp_codes.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true
+  - changeSet:
+      id: addUssdSa
+      author: freeman@imalipay.com
+      changes:
+      - sqlFile:
+          dbms: postgresql
+          path: 010-add_ussd_sa.sql
+          relativeToChangelogFile: true
+          splitStatements: true
+          stripComments: true

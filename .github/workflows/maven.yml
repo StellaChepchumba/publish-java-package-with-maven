@@ -1,0 +1,289 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Java CI with Maven
+
+
+on:
+  push:
+    branches: [ "main", "production", "sandbox", "development", "feature/actions" ]
+  pull_request:
+    branches: [ "main", "production", "sandbox", "development", "feature/actions" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+
+  #Unit Tests
+  test:
+    runs-on: ubuntu-latest
+
+
+    services:
+      rabbitmq:
+        image: rabbitmq:3.8
+        env:
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
+        ports:
+          - 5672
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/checkout@master
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+
+
+    - uses: mer-team/rabbitmq-mng-action@v1.2
+      with:
+        RABBITMQ_USER: 'guest'
+        RABBITMQ_PASS: 'guest'
+        RABBITMQ_PORT: 5672
+        RABBITMQ_MNG_PORT: 15672
+        RABBITMQ_TAG: '3-management-alpine'
+
+    - name: Build & Test with Maven
+      run: |
+        mvn -B package --file pom.xml
+        mvn clean test
+      env:
+        RABBITMQ_HOST: 127.0.0.1
+        RABBITMQ_PORT: ${{ job.services.rabbitmq.ports['5672'] }}
+
+  #Sonars job
+#  sonar:
+#    #depends on test job
+#    needs: test
+#    name: Sonar Cube Analysis
+#    #Run on ubuntu using the latest version
+#    runs-on: ubuntu-latest
+#    #depends on rabbitmq service
+#    services:
+#      rabbitmq:
+#        image: rabbitmq:3.8
+#        env:
+#          RABBITMQ_DEFAULT_USER: guest
+#          RABBITMQ_DEFAULT_PASS: guest
+#        ports:
+#          - 5672
+#    #sonar job steps
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 11
+#      - name: Start PostgreSQL on Ubuntu
+#        run: |
+#          sudo systemctl start postgresql.service
+#          pg_isready
+#
+#      - name: Create additional user
+#        run: |
+#          sudo -u postgres psql --command="CREATE USER root PASSWORD 'lipuka'" --command="\du" --command="ALTER USER root WITH SUPERUSER;"
+#
+#      - name: Create Additional DB
+#        run: |
+#          sudo -u postgres createdb core_v1 --owner=root
+#          PGPASSWORD=lipuka
+#
+#      - name: Create  schema
+#        run: |
+#          sudo -u postgres psql --command="\c core_v1" --command="CREATE SCHEMA messaging" --command="GRANT USAGE ON SCHEMA messaging TO root;" --command="GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA messaging TO root;" --command="GRANT USAGE ON SCHEMA messaging TO root;"
+#          sudo -u postgres psql  --command="CREATE SCHEMA messaging" --command="GRANT USAGE ON SCHEMA messaging TO root;" --command="GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA messaging TO root;" --command="GRANT USAGE ON SCHEMA messaging TO root;"
+#          sudo -u postgres psql --command="\c core_v1" --command="CREATE SCHEMA messaging" --command="GRANT USAGE ON SCHEMA messaging TO postgres;" --command="GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA messaging TO postgres;" --command="GRANT USAGE ON SCHEMA messaging TO postgres;"
+#
+#
+#      - uses: mer-team/rabbitmq-mng-action@v1.2
+#        with:
+#          RABBITMQ_USER: 'guest'
+#          RABBITMQ_PASS: 'guest'
+#          RABBITMQ_PORT: 5672
+#          RABBITMQ_MNG_PORT: 15672
+#          RABBITMQ_TAG: '3-management-alpine'
+#
+#      #Set up SonarCube cache
+#      - name: Cache SonarQube packages
+#        uses: actions/cache@v1
+#        with:
+#          path: ~/.sonar/cache
+#          key: ${{ runner.os }}-sonar
+#          restore-keys: ${{ runner.os }}-sonar
+#
+#      #Set up Maven cache
+#      - name: Cache Maven packages
+#        uses: actions/cache@v1
+#        with:
+#          path: ~/.m2
+#          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: ${{ runner.os }}-m2
+#
+#      #Analyze project with sonacube
+#      - name: Build and analyze
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Messaging-ms
+
+  #Builds job
+  build:
+    #depends on sonar job
+    needs: test
+    name: build
+
+    #Run on ubuntu using latest version
+    runs-on: ubuntu-latest
+    steps:
+      #Check-out your repository under $GITHUB_WORKSPACE, so your workflow can access it
+      - uses: actions/checkout@v3
+      #Set up JDK 11
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      #Set up maven cache
+      - name: Cache Maven packages
+        #This action allows caching dependencies and build outputs to improve workflow execution time.
+        uses: actions/cache@v3
+        with:
+          path: ~/ .m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      #Build the application using Maven
+      - name: Build with Maven
+        run: mvn -B package -DskipTests --file pom.xml
+
+      - name: check files
+        run: |
+          cd msg-core/target
+          ls
+      #Build the application using Maven
+      - name: Upload JAR
+        #This uploads artifacts from your workflow allowing you to share data between jobs and store data once a workflow is complete.
+        uses: actions/upload-artifact@v3
+        with:
+          #Set artifact name
+          name: messaging-core-latest-0.0.1.jar
+          #From this path
+          path: msg-core/target/messaging-core-0.0.1-SNAPSHOT.jar
+
+  #dockerize
+  dockerize:
+    #Build a Docker image to deploy, run, or push to a registry.
+    #depends on build job
+    needs: build
+    name: dockerize
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Kubectl tool installer
+        uses: Azure/setup-kubectl@v3
+        with:
+          version: 'v1.24.0'
+        id: install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Downloading the jar file
+        uses: actions/download-artifact@v3
+        with:
+          name: messaging-core-latest-0.0.1.jar
+          path: msg-core/target/messaging-core-0.0.1-SNAPSHOT.jar
+
+      - name: check files
+        run: |
+          cd msg-core/target
+          ls
+
+      - uses: actions/checkout@v3
+      - name: Build the Docker image & push to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: msg-core
+          IMAGE_TAG: ${{github.sha}}
+        run: |
+          ls
+          DOCKER_BUILDKIT=1 docker build . --file Dockerfile --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker image ls
+          docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
+
+  #deploy:
+  deployment:
+    needs: dockerize
+    name: deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: AKIAVUEC3CELVHMNN5Y7
+          aws-secret-access-key: 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
+          aws-region: eu-west-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Install and configure kubectl
+        run: |
+          VERSION=$(curl --silent https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+          curl https://storage.googleapis.com/kubernetes-release/release/$VERSION/bin/linux/amd64/kubectl \
+              --progress-bar \
+              --location \
+              --remote-name
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          echo ${{ secrets.KUBECONFIG }} | base64 --decode > kubeconfig.yaml
+
+      - name: Update kube config
+        run: aws eks update-kubeconfig --name development --region eu-west-1
+
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f kubernetes/folder/deployment.yaml
+          kubectl apply -f kubernetes/folder/service.yaml
+          kubectl describe deployments
+          kubectl get deployments
+          kubectl get pods
+
+  #Slack Message
+  notify:
+
+    name: Notify on Slack
+    runs-on: [self-hosted, linux]
+    # Only run this workflow when "build" workflow succeeds
+    needs: [ deployment ]
+
+    # Only run this workflow if it target is main branch on pull_request event
+    steps:
+
+      - uses: abinoda/slack-action@master
+        env:
+          # required
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          # custom message to send to slack
+          args: '{\"channel\":\"${{ secrets.SLACK_PR_CHANNEL_ID }}\",\"blocks\":[{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Repository pushed to:* ${{ github.event.repository.name }}\"}},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Pusher:* ${{ github.event.pusher.name }}\n*Commit Message:* ${{ github.event.head_commit.message }}\"}},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<${{ github.event.repository.html_url }}|View Repository>\"}}]}'
+        # Pick up events even if the job is success.
+        if: success()
