@@ -218,6 +218,20 @@
 			</plugin>
 		</plugins>
 	</build>
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub stella4545 Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/StellaChepchumba/publish-java-package-with-maven</url>
+		</repository>
+	</distributionManagement>
+	<scm>
+		<connection>scm:git:git://github.com/StellaChepchumba/publish-java-package-with-maven.git</connection>
+		<developerConnection>StellaChepchumba/publish-java-package-with-maven.git
+		</developerConnection>
+		<url>StellaChepchumba/publish-java-package-with-maven</url>
+		<tag>github-example-package</tag>
+	</scm>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

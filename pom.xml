@@ -79,8 +79,8 @@
   <distributionManagement>
     <repository>
       <id>github</id>
-      <name>GITHUB</name>
-      <url>https://maven.pkg.github.com/publish-java-package-with-maven</url>
+      <name>GitHub stella4545 Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/StellaChepchumba/publish-java-package-with-maven</url>
     </repository>
   </distributionManagement>
 </project>
